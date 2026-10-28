@@ -74,9 +74,11 @@ variable "role_actions" {
   type = object({
     base_subscription_access_actions     = list(string)
     dspm_blob_storage_actions            = list(string)
+    dspm_azure_sql_actions               = list(string)
     virtual_machines_scanning_actions    = list(string)
     host_rg_access_actions               = list(string)
     virtual_machines_scanning_rg_actions = list(string)
+    dspm_azure_sql_rg_actions            = list(string)
     target_rg_access_actions             = list(string)
     conditional_public_ip_actions        = list(string)
     subscription_scanner_actions         = list(string)
