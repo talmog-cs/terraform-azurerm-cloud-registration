@@ -19,6 +19,11 @@ variable "enable_dspm" {
   type        = bool
 }
 
+variable "dspm_access_scopes" {
+  description = "DSPM datastores to apply permissions for, keyed by datastore, all false when DSPM is disabled."
+  type        = map(bool)
+}
+
 variable "enable_vulnerability_scanning" {
   description = "Controls whether to enable Vulnerability Scanning."
   type        = bool

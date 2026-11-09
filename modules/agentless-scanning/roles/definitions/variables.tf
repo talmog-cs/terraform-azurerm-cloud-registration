@@ -25,10 +25,19 @@ variable "enable_vulnerability_scanning" {
   default     = false
 }
 
-variable "enable_dspm" {
-  description = "Enable DSPM (Data Security Posture Management)."
+variable "dspm_access_scopes" {
+  description = "DSPM datastores to apply permissions for, keyed by datastore, all false when DSPM is disabled."
+  type        = map(bool)
+}
+
+variable "needs_storage_account_access" {
+  description = "Whether the Access role gets the storage account actions. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
   type        = bool
-  default     = false
+}
+
+variable "needs_scanner_role" {
+  description = "Whether to create the Scanner role. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
+  type        = bool
 }
 
 variable "use_custom_subnets" {
@@ -72,16 +81,22 @@ variable "resource_suffix" {
 variable "role_actions" {
   description = "Role action definitions passed from the parent module."
   type = object({
-    base_subscription_access_actions     = list(string)
-    dspm_blob_storage_actions            = list(string)
-    virtual_machines_scanning_actions    = list(string)
-    host_rg_access_actions               = list(string)
-    virtual_machines_scanning_rg_actions = list(string)
-    target_rg_access_actions             = list(string)
-    conditional_public_ip_actions        = list(string)
-    subscription_scanner_actions         = list(string)
-    subscription_scanner_data_actions    = list(string)
-    custom_vnet_subnet_actions           = list(string)
-    rg_scanner_actions                   = list(string)
+    base_subscription_access_actions                     = list(string)
+    dspm_storage_account_subscription_access_actions     = list(string)
+    virtual_machines_scanning_actions                    = list(string)
+    host_rg_access_actions                               = list(string)
+    virtual_machines_scanning_rg_actions                 = list(string)
+    target_rg_access_actions                             = list(string)
+    conditional_public_ip_actions                        = list(string)
+    dspm_blob_storage_subscription_scanner_actions       = list(string)
+    dspm_blob_storage_subscription_scanner_data_actions  = list(string)
+    dspm_table_storage_subscription_scanner_actions      = list(string)
+    dspm_table_storage_subscription_scanner_data_actions = list(string)
+    dspm_azure_files_subscription_scanner_actions        = list(string)
+    dspm_azure_files_subscription_scanner_data_actions   = list(string)
+    custom_vnet_subnet_actions                           = list(string)
+    rg_scanner_actions                                   = list(string)
+    dspm_azure_sql_subscription_access_actions           = list(string)
+    dspm_azure_sql_host_rg_access_actions                = list(string)
   })
 }

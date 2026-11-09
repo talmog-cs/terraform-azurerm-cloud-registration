@@ -13,13 +13,24 @@ locals {
     ]
   ])) : toset([])
 
+  # The validation of var.input_dspm_access_scopes repeats this list: validations cannot read locals before Terraform 1.9
+  dspm_resource_types = ["blob_storage", "table_storage", "azure_files", "virtual_machines", "azure_sql"]
+
+  # Every scope is false when DSPM is disabled; omitted or null scopes default to true
+  dspm_access_scopes = {
+    for resource_type in local.dspm_resource_types :
+    resource_type => var.input_enable_dspm && coalesce(lookup(var.input_dspm_access_scopes, resource_type, null), true)
+  }
+  needs_storage_account_access = local.dspm_access_scopes.blob_storage || local.dspm_access_scopes.table_storage || local.dspm_access_scopes.azure_files
+  needs_scanner_role           = local.needs_storage_account_access
+
   # Single source of truth for all role action definitions
   role_actions = {
     base_subscription_access_actions = [
       "Microsoft.Authorization/roleAssignments/read",
       "Microsoft.Authorization/policyDefinitions/read",
     ]
-    dspm_blob_storage_actions = [
+    dspm_storage_account_subscription_access_actions = [
       "Microsoft.Storage/storageAccounts/read",
       "Microsoft.Storage/storageAccounts/PrivateEndpointConnectionsApproval/action",
     ]
@@ -77,14 +88,22 @@ locals {
       "Microsoft.Network/publicIPAddresses/write",
       "Microsoft.Network/publicIPAddresses/join/action",
     ]
-    subscription_scanner_actions = [
+    dspm_blob_storage_subscription_scanner_actions = [
       "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+    ]
+    dspm_blob_storage_subscription_scanner_data_actions = [
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+    ]
+    dspm_table_storage_subscription_scanner_actions = [
       "Microsoft.Storage/storageAccounts/tableServices/tables/read",
+    ]
+    dspm_table_storage_subscription_scanner_data_actions = [
+      "Microsoft.Storage/storageAccounts/tableServices/tables/entities/read",
+    ]
+    dspm_azure_files_subscription_scanner_actions = [
       "Microsoft.Storage/storageAccounts/fileServices/shares/read",
     ]
-    subscription_scanner_data_actions = [
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
-      "Microsoft.Storage/storageAccounts/tableServices/tables/entities/read",
+    dspm_azure_files_subscription_scanner_data_actions = [
       "Microsoft.Storage/storageAccounts/fileServices/fileshares/files/read",
       "Microsoft.Storage/storageAccounts/fileServices/readFileBackupSemantics/action",
     ]
@@ -95,6 +114,15 @@ locals {
     ]
     rg_scanner_actions = [
       "Microsoft.Compute/virtualMachines/attachDetachDataDisks/action",
+    ]
+    dspm_azure_sql_subscription_access_actions = [
+      "Microsoft.Sql/servers/databases/write",
+    ]
+    dspm_azure_sql_host_rg_access_actions = [
+      "Microsoft.Sql/servers/write",
+      "Microsoft.Sql/servers/privateEndpointConnectionsApproval/action",
+      "Microsoft.Sql/servers/delete",
+      "Microsoft.Sql/servers/databases/delete",
     ]
   }
 }
@@ -108,7 +136,9 @@ module "agentless_scanning_role_definitions_mg" {
   scope_id                              = each.value
   is_host                               = each.key == var.host_mg_id
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
-  enable_dspm                           = var.input_enable_dspm
+  dspm_access_scopes                    = local.dspm_access_scopes
+  needs_storage_account_access          = local.needs_storage_account_access
+  needs_scanner_role                    = local.needs_scanner_role
   enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
   use_custom_subnets                    = length(var.agentless_scanning_custom_vnet_configuration) > 0
   resource_prefix                       = var.resource_prefix
@@ -124,7 +154,9 @@ module "agentless_scanning_role_definitions_sub" {
   scope_type                            = "subscription"
   scope_id                              = data.azurerm_client_config.current.subscription_id
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
-  enable_dspm                           = var.input_enable_dspm
+  dspm_access_scopes                    = local.dspm_access_scopes
+  needs_storage_account_access          = local.needs_storage_account_access
+  needs_scanner_role                    = local.needs_scanner_role
   enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
   use_custom_subnets                    = local.use_custom_subnets
   is_host                               = local.should_deploy_scanning_environment
@@ -142,7 +174,8 @@ module "agentless_scanning_role_assignments" {
   agentless_scanner_identity_principal_id = local.should_deploy_scanning_environment ? module.agentless_scanning_environment[0].scanner_identity_principal_id : var.agentless_scanner_identity_principal_id
   resource_group_name                     = var.deploy_resource_group ? module.crowdstrike_resource_group[0].resource_group_name : var.resource_group_name
   is_host                                 = local.should_deploy_scanning_environment
-  enable_dspm                             = var.input_enable_dspm
+  needs_scanner_role                      = local.needs_scanner_role
+  dspm_access_scopes                      = local.dspm_access_scopes
   custom_subnet_ids                       = local.custom_subnet_ids
 
   depends_on = [module.crowdstrike_resource_group, module.agentless_scanning_environment]
@@ -183,6 +216,7 @@ module "agentless_scanning_parameters" {
 
   falcon_client_id                              = var.falcon_client_id
   enable_dspm                                   = var.input_enable_dspm
+  dspm_access_scopes                            = local.dspm_access_scopes
   enable_vulnerability_scanning                 = var.input_enable_vulnerability_scanning
   agentless_scanning_locations                  = var.agentless_scanning_locations
   agentless_scanning_locations_per_subscription = var.input_agentless_scanning_locations_per_subscription

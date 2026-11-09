@@ -7,7 +7,13 @@ variable "role_definition_ids" {
     subscription_scanner = string
     custom_vnet_subnet   = string
     rg_scanner           = string
+    dspm_access_scopes   = optional(map(bool))
   })
+}
+
+variable "dspm_access_scopes" {
+  description = "DSPM datastores this subscription enables, keyed by datastore, all false when DSPM is disabled."
+  type        = map(bool)
 }
 
 variable "agentless_scanning_principal_id" {
@@ -46,8 +52,8 @@ variable "is_host" {
   default     = true
 }
 
-variable "enable_dspm" {
-  description = "Whether DSPM (Data Security Posture Management) feature is enabled."
+variable "needs_scanner_role" {
+  description = "Whether to assign the Scanner role to the scanner identity. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
   type        = bool
   default     = false
 }

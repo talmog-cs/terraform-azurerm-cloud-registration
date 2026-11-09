@@ -7,5 +7,6 @@ output "role_definition_ids" {
     subscription_scanner = length(azurerm_role_definition.subscription_scanner) > 0 ? azurerm_role_definition.subscription_scanner[0].role_definition_resource_id : ""
     custom_vnet_subnet   = length(azurerm_role_definition.custom_vnet_subnet) > 0 ? azurerm_role_definition.custom_vnet_subnet[0].role_definition_resource_id : ""
     rg_scanner           = length(azurerm_role_definition.rg_scanner) > 0 ? azurerm_role_definition.rg_scanner[0].role_definition_resource_id : ""
+    dspm_access_scopes   = var.dspm_access_scopes
   }
 }

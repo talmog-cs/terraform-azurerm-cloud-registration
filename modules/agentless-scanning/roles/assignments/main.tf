@@ -24,6 +24,16 @@ resource "azurerm_role_assignment" "subscription_access" {
   role_definition_id = local.definition_ids.subscription_access
   principal_id       = var.agentless_scanning_principal_id
   principal_type     = "ServicePrincipal"
+
+  lifecycle {
+    precondition {
+      # Definitions passed without their scopes (hand-built scanning_role_definition_ids) are not checked
+      condition = var.role_definition_ids.dspm_access_scopes == null || alltrue([
+        for datastore, enabled in var.dspm_access_scopes : !enabled || try(var.role_definition_ids.dspm_access_scopes[datastore], false)
+      ])
+      error_message = "The role definitions lack permissions for DSPM datastores this subscription enables. Set 'input_enable_dspm' and 'input_dspm_access_scopes' to the 'enable_dspm' and 'dspm_access_scopes' of the registration whose 'scanning_role_definition_ids' this subscription uses, or enable those datastores in the registration."
+    }
+  }
 }
 
 resource "azurerm_role_assignment" "rg_access" {
@@ -36,12 +46,19 @@ resource "azurerm_role_assignment" "rg_access" {
 }
 
 resource "azurerm_role_assignment" "subscription_scanner" {
-  count = var.enable_dspm ? 1 : 0
+  count = var.needs_scanner_role ? 1 : 0
 
   scope              = "/subscriptions/${local.subscription_id}"
   role_definition_id = local.definition_ids.subscription_scanner
   principal_id       = var.agentless_scanner_identity_principal_id
   principal_type     = "ServicePrincipal"
+
+  lifecycle {
+    precondition {
+      condition     = var.role_definition_ids.subscription_scanner != ""
+      error_message = "The Scanner role definition was not created. Set 'input_enable_dspm' and 'input_dspm_access_scopes' to the 'enable_dspm' and 'dspm_access_scopes' of the registration whose 'scanning_role_definition_ids' this subscription uses."
+    }
+  }
 }
 
 resource "azurerm_role_assignment" "rg_scanner_reader" {
