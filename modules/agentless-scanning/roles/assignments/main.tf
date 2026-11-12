@@ -69,12 +69,19 @@ resource "azurerm_role_assignment" "rg_scanner_reader" {
 }
 
 resource "azurerm_role_assignment" "rg_scanner" {
-  count = var.is_host ? 1 : 0
+  count = var.is_host && var.needs_vm_scan_actions ? 1 : 0
 
   scope              = "/subscriptions/${local.subscription_id}/resourceGroups/${var.resource_group_name}"
   role_definition_id = local.definition_ids.rg_scanner
   principal_id       = var.agentless_scanner_identity_principal_id
   principal_type     = "ServicePrincipal"
+
+  lifecycle {
+    precondition {
+      condition     = var.role_definition_ids.rg_scanner != ""
+      error_message = "The RG Scanner role definition was not created. Set 'input_enable_dspm', 'input_dspm_access_scopes' and 'input_enable_vulnerability_scanning' to the values of the registration whose 'scanning_role_definition_ids' this subscription uses."
+    }
+  }
 }
 
 resource "azurerm_role_assignment" "custom_vnet_subnet" {

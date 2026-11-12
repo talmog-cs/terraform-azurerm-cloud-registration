@@ -58,6 +58,12 @@ variable "needs_scanner_role" {
   default     = false
 }
 
+variable "needs_vm_scan_actions" {
+  description = "Whether to assign the RG Scanner role to the scanner identity. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
+  type        = bool
+  default     = false
+}
+
 variable "custom_subnet_ids" {
   description = "Set of custom subnet IDs for VNet subnet role assignments."
   type        = set(string)

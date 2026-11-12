@@ -1,19 +1,17 @@
 locals {
   scope = var.scope_type == "mg" ? "/providers/Microsoft.Management/managementGroups/${var.scope_id}" : "/subscriptions/${var.scope_id}"
 
-  needs_vm_scan_actions = var.dspm_access_scopes.virtual_machines || var.enable_vulnerability_scanning
-
   subscription_access_actions = concat(
     var.role_actions.base_subscription_access_actions,
     var.needs_storage_account_access ? var.role_actions.dspm_storage_account_subscription_access_actions : [],
     var.dspm_access_scopes.azure_sql ? var.role_actions.dspm_azure_sql_subscription_access_actions : [],
-    local.needs_vm_scan_actions ? var.role_actions.virtual_machines_scanning_actions : []
+    var.needs_vm_scan_actions ? var.role_actions.virtual_machines_scanning_actions : []
   )
 
   rg_access_actions = concat(
     var.role_actions.host_rg_access_actions,
     !var.agentless_scanning_deploy_nat_gateway ? var.role_actions.conditional_public_ip_actions : [],
-    local.needs_vm_scan_actions ? var.role_actions.virtual_machines_scanning_rg_actions : [],
+    var.needs_vm_scan_actions ? var.role_actions.virtual_machines_scanning_rg_actions : [],
     var.dspm_access_scopes.azure_sql ? var.role_actions.dspm_azure_sql_host_rg_access_actions : []
   )
 
@@ -106,7 +104,7 @@ resource "azurerm_role_definition" "custom_vnet_subnet" {
 }
 
 resource "azurerm_role_definition" "rg_scanner" {
-  count = var.is_host || var.scope_type == "mg" ? 1 : 0
+  count = var.needs_vm_scan_actions && (var.is_host || var.scope_type == "mg") ? 1 : 0
 
   name        = "${var.resource_prefix}role-csscanning-rg-scanner-${var.scope_id}${var.resource_suffix}"
   scope       = local.scope

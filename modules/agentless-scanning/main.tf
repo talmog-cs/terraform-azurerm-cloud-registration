@@ -23,6 +23,8 @@ locals {
   }
   needs_storage_account_access = local.dspm_access_scopes.blob_storage || local.dspm_access_scopes.table_storage || local.dspm_access_scopes.azure_files
   needs_scanner_role           = local.needs_storage_account_access
+  # VM disk scanning (DSPM or Vulnerability Scanning) needs the disk and snapshot actions and the RG Scanner role
+  needs_vm_scan_actions = local.dspm_access_scopes.virtual_machines || var.input_enable_vulnerability_scanning
 
   # Single source of truth for all role action definitions
   role_actions = {
@@ -139,7 +141,7 @@ module "agentless_scanning_role_definitions_mg" {
   dspm_access_scopes                    = local.dspm_access_scopes
   needs_storage_account_access          = local.needs_storage_account_access
   needs_scanner_role                    = local.needs_scanner_role
-  enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
+  needs_vm_scan_actions                 = local.needs_vm_scan_actions
   use_custom_subnets                    = length(var.agentless_scanning_custom_vnet_configuration) > 0
   resource_prefix                       = var.resource_prefix
   resource_suffix                       = var.resource_suffix
@@ -157,7 +159,7 @@ module "agentless_scanning_role_definitions_sub" {
   dspm_access_scopes                    = local.dspm_access_scopes
   needs_storage_account_access          = local.needs_storage_account_access
   needs_scanner_role                    = local.needs_scanner_role
-  enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
+  needs_vm_scan_actions                 = local.needs_vm_scan_actions
   use_custom_subnets                    = local.use_custom_subnets
   is_host                               = local.should_deploy_scanning_environment
   resource_prefix                       = var.resource_prefix
@@ -175,6 +177,7 @@ module "agentless_scanning_role_assignments" {
   resource_group_name                     = var.deploy_resource_group ? module.crowdstrike_resource_group[0].resource_group_name : var.resource_group_name
   is_host                                 = local.should_deploy_scanning_environment
   needs_scanner_role                      = local.needs_scanner_role
+  needs_vm_scan_actions                   = local.needs_vm_scan_actions
   dspm_access_scopes                      = local.dspm_access_scopes
   custom_subnet_ids                       = local.custom_subnet_ids
 

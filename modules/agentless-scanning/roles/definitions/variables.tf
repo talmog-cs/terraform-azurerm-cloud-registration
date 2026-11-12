@@ -19,12 +19,6 @@ variable "agentless_scanning_deploy_nat_gateway" {
   default     = true
 }
 
-variable "enable_vulnerability_scanning" {
-  description = "Enable vulnerability scanning."
-  type        = bool
-  default     = false
-}
-
 variable "dspm_access_scopes" {
   description = "DSPM resource types to apply permissions for, keyed by resource type, all false when DSPM is disabled."
   type        = map(bool)
@@ -37,6 +31,11 @@ variable "needs_storage_account_access" {
 
 variable "needs_scanner_role" {
   description = "Whether to create the Scanner role. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
+  type        = bool
+}
+
+variable "needs_vm_scan_actions" {
+  description = "Whether the Access roles get the VM disk and snapshot actions and the RG Scanner role is created. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
   type        = bool
 }
 
