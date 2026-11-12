@@ -142,7 +142,7 @@ variable "enable_dspm" {
 }
 
 variable "dspm_access_scopes" {
-  description = "DSPM datastores to apply permissions for: `blob_storage`, `table_storage`, `azure_files`, `virtual_machines`, `azure_sql`. Omitted datastores default to `true`. Takes effect only when `enable_dspm` is `true`."
+  description = "DSPM resource types to apply permissions for: `blob_storage`, `table_storage`, `azure_files`, `virtual_machines`, `azure_sql`. Omitted resource types default to `true`. Takes effect only when `enable_dspm` is `true`."
   type        = map(bool)
   default     = {}
   nullable    = false

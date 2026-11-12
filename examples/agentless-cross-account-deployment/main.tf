@@ -13,7 +13,7 @@ locals {
   agentless_scanning_locations          = ["westus"]
   agentless_scanning_deploy_nat_gateway = false
 
-  # Optional: DSPM datastores to apply permissions for. Omitted datastores default to true.
+  # Optional: DSPM resource types to apply permissions for. Omitted resource types default to true.
   # Use the same value for the registration and every agentless scanning subscription module.
   dspm_access_scopes = {
     blob_storage     = true

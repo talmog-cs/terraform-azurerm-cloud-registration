@@ -12,7 +12,7 @@ variable "role_definition_ids" {
 }
 
 variable "dspm_access_scopes" {
-  description = "DSPM datastores this subscription enables, keyed by datastore, all false when DSPM is disabled."
+  description = "DSPM resource types this subscription enables, keyed by resource type, all false when DSPM is disabled."
   type        = map(bool)
 }
 

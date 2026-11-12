@@ -64,7 +64,7 @@ resource "azurerm_policy_definition" "scanning_parameters" {
   lifecycle {
     precondition {
       condition     = !var.enable_dspm || anytrue(values(var.dspm_access_scopes))
-      error_message = "DSPM is enabled but every 'dspm_access_scopes' ('input_dspm_access_scopes' in the agentless-scanning module) datastore is false. Set at least one datastore to true, or set 'enable_dspm' ('input_enable_dspm') to false."
+      error_message = "DSPM is enabled but every 'dspm_access_scopes' ('input_dspm_access_scopes' in the agentless-scanning module) resource type is false. Set at least one resource type to true, or set 'enable_dspm' ('input_enable_dspm') to false."
     }
   }
 }

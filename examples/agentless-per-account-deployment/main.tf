@@ -19,7 +19,7 @@ locals {
     (local.secondary_subscription_id) : ["westus", "westus2"]
   }
 
-  # Optional: DSPM datastores to apply permissions for. Omitted datastores default to true.
+  # Optional: DSPM resource types to apply permissions for. Omitted resource types default to true.
   # Use the same value for the registration and every agentless scanning subscription module.
   dspm_access_scopes = {
     blob_storage     = true
