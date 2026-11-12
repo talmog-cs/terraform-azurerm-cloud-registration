@@ -1,6 +1,7 @@
 locals {
   environment = var.env == "" ? "" : "-${var.env}"
 
+  # Same keys as the Bicep template writes, so the policy parameter has one shape for both
   dspm_access_scopes = {
     blobStorage     = var.dspm_access_scopes.blob_storage
     tableStorage    = var.dspm_access_scopes.table_storage
