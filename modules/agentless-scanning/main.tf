@@ -22,8 +22,7 @@ locals {
     resource_type => var.input_enable_dspm && coalesce(lookup(var.input_dspm_access_scopes, resource_type, null), true)
   }
   needs_storage_account_access = local.dspm_access_scopes.blob_storage || local.dspm_access_scopes.table_storage || local.dspm_access_scopes.azure_files
-  needs_scanner_role           = local.needs_storage_account_access
-  # VM disk scanning (DSPM or Vulnerability Scanning) needs the disk and snapshot actions and the RG Scanner role
+  # VM disk scanning (DSPM or Vulnerability Scanning) needs the disk and snapshot actions
   needs_vm_scan_actions = local.dspm_access_scopes.virtual_machines || var.input_enable_vulnerability_scanning
 
   # Single source of truth for all role action definitions
@@ -139,8 +138,8 @@ module "agentless_scanning_role_definitions_mg" {
   is_host                               = each.key == var.host_mg_id
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
   dspm_access_scopes                    = local.dspm_access_scopes
+  enable_dspm                           = var.input_enable_dspm
   needs_storage_account_access          = local.needs_storage_account_access
-  needs_scanner_role                    = local.needs_scanner_role
   needs_vm_scan_actions                 = local.needs_vm_scan_actions
   use_custom_subnets                    = length(var.agentless_scanning_custom_vnet_configuration) > 0
   resource_prefix                       = var.resource_prefix
@@ -157,8 +156,8 @@ module "agentless_scanning_role_definitions_sub" {
   scope_id                              = data.azurerm_client_config.current.subscription_id
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
   dspm_access_scopes                    = local.dspm_access_scopes
+  enable_dspm                           = var.input_enable_dspm
   needs_storage_account_access          = local.needs_storage_account_access
-  needs_scanner_role                    = local.needs_scanner_role
   needs_vm_scan_actions                 = local.needs_vm_scan_actions
   use_custom_subnets                    = local.use_custom_subnets
   is_host                               = local.should_deploy_scanning_environment
@@ -176,8 +175,7 @@ module "agentless_scanning_role_assignments" {
   agentless_scanner_identity_principal_id = local.should_deploy_scanning_environment ? module.agentless_scanning_environment[0].scanner_identity_principal_id : var.agentless_scanner_identity_principal_id
   resource_group_name                     = var.deploy_resource_group ? module.crowdstrike_resource_group[0].resource_group_name : var.resource_group_name
   is_host                                 = local.should_deploy_scanning_environment
-  needs_scanner_role                      = local.needs_scanner_role
-  needs_vm_scan_actions                   = local.needs_vm_scan_actions
+  enable_dspm                             = var.input_enable_dspm
   dspm_access_scopes                      = local.dspm_access_scopes
   custom_subnet_ids                       = local.custom_subnet_ids
 

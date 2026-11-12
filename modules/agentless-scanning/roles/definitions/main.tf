@@ -72,7 +72,7 @@ resource "azurerm_role_definition" "rg_access_target" {
 }
 
 resource "azurerm_role_definition" "subscription_scanner" {
-  count = var.needs_scanner_role ? 1 : 0
+  count = var.enable_dspm ? 1 : 0
 
   name        = "${var.resource_prefix}role-csscanning-scanner-${var.scope_id}${var.resource_suffix}"
   scope       = local.scope
@@ -104,7 +104,7 @@ resource "azurerm_role_definition" "custom_vnet_subnet" {
 }
 
 resource "azurerm_role_definition" "rg_scanner" {
-  count = var.needs_vm_scan_actions && (var.is_host || var.scope_type == "mg") ? 1 : 0
+  count = var.is_host || var.scope_type == "mg" ? 1 : 0
 
   name        = "${var.resource_prefix}role-csscanning-rg-scanner-${var.scope_id}${var.resource_suffix}"
   scope       = local.scope

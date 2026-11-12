@@ -52,14 +52,8 @@ variable "is_host" {
   default     = true
 }
 
-variable "needs_scanner_role" {
-  description = "Whether to assign the Scanner role to the scanner identity. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
-  type        = bool
-  default     = false
-}
-
-variable "needs_vm_scan_actions" {
-  description = "Whether to assign the RG Scanner role to the scanner identity. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
+variable "enable_dspm" {
+  description = "Whether DSPM (Data Security Posture Management) feature is enabled."
   type        = bool
   default     = false
 }

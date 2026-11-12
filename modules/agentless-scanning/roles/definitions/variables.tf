@@ -29,13 +29,14 @@ variable "needs_storage_account_access" {
   type        = bool
 }
 
-variable "needs_scanner_role" {
-  description = "Whether to create the Scanner role. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
+variable "enable_dspm" {
+  description = "Enable DSPM (Data Security Posture Management)."
   type        = bool
+  default     = false
 }
 
 variable "needs_vm_scan_actions" {
-  description = "Whether the Access roles get the VM disk and snapshot actions and the RG Scanner role is created. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
+  description = "Whether the Access roles get the VM disk and snapshot actions. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
   type        = bool
 }
 
