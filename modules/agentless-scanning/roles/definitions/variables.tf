@@ -24,20 +24,16 @@ variable "dspm_access_scopes" {
   type        = map(bool)
 }
 
-variable "needs_storage_account_access" {
-  description = "Whether the Access role gets the storage account actions. True when DSPM is enabled for Blob Storage, Table Storage or Azure Files."
-  type        = bool
-}
-
 variable "enable_dspm" {
   description = "Enable DSPM (Data Security Posture Management)."
   type        = bool
   default     = false
 }
 
-variable "needs_vm_scan_actions" {
-  description = "Whether the Access roles get the VM disk and snapshot actions. True when DSPM is enabled for Virtual Machines or Vulnerability Scanning is enabled."
+variable "enable_vulnerability_scanning" {
+  description = "Enable vulnerability scanning."
   type        = bool
+  default     = false
 }
 
 variable "use_custom_subnets" {

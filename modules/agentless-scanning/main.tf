@@ -21,9 +21,6 @@ locals {
     for resource_type in local.dspm_resource_types :
     resource_type => var.input_enable_dspm && coalesce(lookup(var.input_dspm_access_scopes, resource_type, null), true)
   }
-  needs_storage_account_access = local.dspm_access_scopes.blob_storage || local.dspm_access_scopes.table_storage || local.dspm_access_scopes.azure_files
-  # VM disk scanning (DSPM or Vulnerability Scanning) needs the disk and snapshot actions
-  needs_vm_scan_actions = local.dspm_access_scopes.virtual_machines || var.input_enable_vulnerability_scanning
 
   # Single source of truth for all role action definitions
   role_actions = {
@@ -139,8 +136,7 @@ module "agentless_scanning_role_definitions_mg" {
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
   dspm_access_scopes                    = local.dspm_access_scopes
   enable_dspm                           = var.input_enable_dspm
-  needs_storage_account_access          = local.needs_storage_account_access
-  needs_vm_scan_actions                 = local.needs_vm_scan_actions
+  enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
   use_custom_subnets                    = length(var.agentless_scanning_custom_vnet_configuration) > 0
   resource_prefix                       = var.resource_prefix
   resource_suffix                       = var.resource_suffix
@@ -157,8 +153,7 @@ module "agentless_scanning_role_definitions_sub" {
   agentless_scanning_deploy_nat_gateway = var.agentless_scanning_deploy_nat_gateway
   dspm_access_scopes                    = local.dspm_access_scopes
   enable_dspm                           = var.input_enable_dspm
-  needs_storage_account_access          = local.needs_storage_account_access
-  needs_vm_scan_actions                 = local.needs_vm_scan_actions
+  enable_vulnerability_scanning         = var.input_enable_vulnerability_scanning
   use_custom_subnets                    = local.use_custom_subnets
   is_host                               = local.should_deploy_scanning_environment
   resource_prefix                       = var.resource_prefix
